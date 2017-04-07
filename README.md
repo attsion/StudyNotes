@@ -10,7 +10,7 @@ kotlin是基于jvm的语言，由jetbrains开发，完全兼容java。
 
 - val定义常量，var定义变量
 - byte和int的值做==比较为false,必须进行显式转换，数值类型有toXX()的函数
-
+- 3
 
 
 
