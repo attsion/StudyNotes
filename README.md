@@ -4,10 +4,10 @@
 * [md 常用格式](#md-常用格式)
 
 ---
-## kotlin 学习笔记 
+# kotlin 学习笔记 
 
 kotlin是基于jvm的语言，由jetbrains开发，完全兼容java。
-### 类相关
+## 类相关
 
 ```kotlin
 //类和属性默认是public
@@ -54,7 +54,7 @@ class Student(b:string):Person(b),IPeople
 
 ```
 
-### 属性
+## 属性
 
 ```kotlin
 //比c#重少了许多大括号
@@ -70,7 +70,7 @@ val Foo=3
 private set;//改变set可见性但是不改变默认实现
 ```
 
-### 对象表达式
+## 对象表达式
 
 ```kotlin
 //这叫java匿名对象吧
@@ -97,7 +97,7 @@ class C {
     }
 
     // 公有函数，所以其返回类型是 Any
-    fun publicFoo() = object {
+    fun public Foo() = object {
         val x: String = "x"
     }
 
@@ -124,7 +124,7 @@ fun countClicks(window: JComponent) {
     // ……
 }
 ```
-### 对象声明
+## 对象声明
 *注意：对象声明不能在局部作用域（即直接嵌套在函数内部），但是它们可以嵌套到其他对象声明或非内部类中。*
 ```kotlin
 //单例 有点像c#的纯静态类
@@ -139,7 +139,7 @@ object DataProviderManager {
 //访问
 DataProviderManager.registerDataProvider(...)
 ```
-### 伴生对象(对象声明的一种特殊用法)
+## 伴生对象(对象声明的一种特殊用法)
 *注意：使用伴生对象就像静态方法。*
 ```kotlin
 class MyClass {
@@ -153,7 +153,115 @@ MyClass.Companion.Foo();
 
 ```
 
-### 代理类
+
+## 函数
+
+```kotlin
+//正常函数声明
+fun double(x: Int): Int {
+
+};
+//无返回值可以省略Unit
+fun print(x:Int){
+    println(x.ToSting());
+}
+//单表达式参数可以省略返回类型和大括号
+fun double(x: Int) = x * 2
+
+//默认值
+fun double(x: Int=5): Int {
+}
+//覆盖方法总是使用与基类型方法相同的默认参数值。 当覆盖一个带有默认参数值的方法时，必须从签名中省略默认参数值
+open class A {
+    open fun foo(i: Int = 10) { …… }
+}
+class B : A() {
+    override fun foo(i: Int) { …… }  // 不能有默认值
+}
+//命名调用
+reformat(str,
+    normalizeCase = true,
+    upperCaseFirstLetter = true,
+    divideByCamelHumps = false,
+    wordSeparator = '_'
+)
+//可变参数
+fun <T> asList(vararg ts: T): List<T> {
+    val result = ArrayList<T>()
+    for (t in ts) // ts is an Array
+        result.add(t)
+    return result
+}
+val list = asList(1, 2, 3);
+
+//泛型函数*注意<T>位置*
+fun <T> singletonList(item: T): List<T> {
+    // ……
+}
+//局部函数
+fun dfs(graph: Graph) {
+    val visited = HashSet<Vertex>()
+    fun dfs(current: Vertex) {
+        if (!visited.add(current)) return
+        for (v in current.neighbors)
+            dfs(v)
+    }
+
+    dfs(graph.vertices[0])
+}
+
+//尾递归函数
+tailrec fun findFixPoint(x: Double = 1.0): Double 
+    = if (x == Math.cos(x)) x else findFixPoint(Math.cos(x))
+//相当于
+fun findFixPoint(): Double {
+    var x = 1.0
+    while (true) {
+        val y = Math.cos(x)
+        if ( x == y ) return y
+        x = y
+    }
+}
+```
+
+
+## 泛型
+``` kotlin
+//泛型类
+class Box<T>(t: T) {
+    var value = t
+}
+//泛型函数
+fun <T> singletonList(item: T): List<T> {
+    // ……
+}
+//泛型约束 两种形式皆可
+fun <T : Comparable<T>> sort(list: List<T>) {
+    // ……
+}
+
+fun <T> cloneWhenGreater(list: List<T>, threshold: T): List<T>
+    where T : Comparable,
+          T : Cloneable {
+  return list.filter { it > threshold }.map { it.clone() }
+}
+```
+Kotlin 为此提供了所谓的星投影语法：
+
+- 对于 Foo <out T>，其中 T 是一个具有上界 TUpper 的协变类型参数，Foo <\*> 等价于 Foo <out TUpper>。 这意味着当 T 未知时，你可以安全地从 Foo <\*> 读取 TUpper 的值。
+- 对于 Foo <in T>，其中 T 是一个逆变类型参数，Foo <\*> 等价于 Foo <in Nothing>。 这意味着当 T 未知时，没有什么可以以安全的方式写入 Foo <\*>。
+- 对于 Foo <T>，其中 T 是一个具有上界 TUpper 的不型变类型参数，Foo<\*> 对于读取值时等价于 Foo<out TUpper> 而对于写值时等价于 Foo<in Nothing>。  
+
+如果泛型类型具有多个类型参数，则每个类型参数都可以单独投影。 例如，如果类型被声明为 interface Function <in T, out U>，我们可以想象以下星投影：
+
+- Function<*, String> 表示 Function<in Nothing, String>；
+- Function<Int, *> 表示 Function<Int, out Any?>；
+- Function<*, *> 表示 Function<in Nothing, out Any?>。  
+
+注意：星投影非常像 Java 的原始类型，但是安全。
+
+
+## 代理类
 ``` kotlin
 
 interface IOp
@@ -180,10 +288,41 @@ class Derived(b:IOp) : IOp
 }
 
 ```
+## 延迟属性 Lazy
 
----
+lazy() 是接受一个 lambda 并返回一个 Lazy <T> 实例的函数，返回的实例可以作为实现延迟属性的委托： 第一次调用 get() 会执行已传递给 lazy() 的 lamda 表达式并记录结果， 后续调用 get() 只是返回记录的结果。
+``` kotlin
+val lazyValue: String by lazy {
+    println("computed!")
+    "Hello"
+}
+```
+## 把属性储存在映射中
 
-### 特性
+一个常见的用例是在一个映射（map）里存储属性的值。 这经常出现在像解析 JSON 或者做其他“动态”事情的应用中。 在这种情况下，你可以使用映射实例自身作为委托来实现委托属性。
+``` kotlin
+class User(val map: Map<String, Any?>) {
+    val name: String by map
+    val age: Int     by map
+}
+//在这个例子中，构造函数接受一个映射参数：
+
+val user = User(mapOf(
+    "name" to "John Doe",
+    "age"  to 25
+))
+//委托属性会从这个映射中取值（通过字符串键——属性的名称）：
+
+println(user.name) // Prints "John Doe"
+println(user.age)  // Prints 25
+//这也适用于 var 属性，如果把只读的 Map 换成 MutableMap 的话：
+
+class MutableUser(val map: MutableMap<String, Any?>) {
+    var name: String by map
+    var age: Int     by map
+}
+```
+## 特性
 ``` kotlin
 //open == c#中的 virual
 //val == c#中的 readonly
@@ -263,11 +402,11 @@ with(myTurtle) { //draw a 100 pix square
 
 ---
 
-### byte和int的值做==比较为false,必须进行显式转换，数值类型有toXX()的函数
+## byte和int的值做==比较为false,必须进行显式转换，数值类型有toXX()的函数
 
 ---
 
-### 'typealis' 可以定义类型映射
+## 'typealis' 可以定义类型映射
 
 ``` kotlin
 typealias int = Int;
@@ -276,46 +415,22 @@ typealias Action<T> = (T)->Unit;
 
 ---
 
-### 函数支持命名参数和默认参数
-``` kotlin
-//正常函数声明
-fun double(x: Int): Int {
 
-};
-//无返回值可以省略Unit
-fun print(x:Int){
-    println(x.ToSting());
-}
-//单表达式参数可以省略返回类型和大括号
-fun double(x: Int) = x * 2
-//尾递归函数
-tailrec fun findFixPoint(x: Double = 1.0): Double 
-    = if (x == Math.cos(x)) x else findFixPoint(Math.cos(x))
-//相当于
-fun findFixPoint(): Double {
-    var x = 1.0
-    while (true) {
-        val y = Math.cos(x)
-        if ( x == y ) return y
-        x = y
-    }
-}
-```
 
 
 
 ---
 
-## md 常用格式
+# md 常用格式
 1. #号加空格代表标题,6级
 2. 段内换行为`两个空格加换行`
 3. `包裹为强调,*包裹为加粗，还有**包裹,***包裹
 4. 列表 `数字.`后面加空格有序列表,*或者-后加空格无序列表
-5. ```加语言名字为code段
+5. 三个`加语言名字为code段
 6. 引用为>,可多个代表级别，也可嵌套
 7. 分割线用三个·- - -·
 8. 超链接是方括号文字加小括号链接
-9. 图片是叹号放括弧提示加小括号地址
+9. 图片是叹号方括弧提示加小括号地址
 10. 锚点是链接地址前加#，目的地是标题，注意用-代替空格
 11. 表格见下图 
  
